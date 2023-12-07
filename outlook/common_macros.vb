@@ -13,9 +13,6 @@ End Sub
 Sub UnifiedSent()
     DoSearch ("folder:Sent")
 End Sub
-Sub UnifiedInOut()
-    DoSearch ("(folder:Inbox OR folder:Sent)")
-End Sub
 Sub DoSearch(ByVal terms As String)
     Dim txtSearch  As String
     Dim myOlApp As New Outlook.Application
@@ -23,6 +20,9 @@ Sub DoSearch(ByVal terms As String)
     txtSearch = terms
     myOlApp.ActiveExplorer.Search txtSearch, olSearchScopeAllFolders
     Set myOlApp = Nothing
+End Sub
+Sub UnifiedInOut()
+    DoSearch ("(folder:Inbox OR folder:Sent)")
 End Sub
 Sub ArchiveSelectedMessages()
 
@@ -156,3 +156,35 @@ Public Sub ReserveCalendarTime()
     oAppointment.Display
     
 End Sub
+Public Sub ShowMyCalendars()
+    Dim xc As Folder
+    Set xc = OpenCalendarDisplay
+    SelectCalendar xc, "Calendar"
+End Sub
+
+Private Function OpenCalendarDisplay() As Folder
+    Dim xCalendar As Folder
+    Set xCalendar = Outlook.Session.GetDefaultFolder(olFolderCalendar)
+    xCalendar.Display
+    Set OpenCalendarDisplay = xCalendar
+    
+End Function
+Private Sub SelectCalendar(ByVal calendar As Folder, ByVal name As String, Optional ByVal doSelect As Boolean = True)
+    Dim mCalendar As CalendarModule
+    Dim nGrp As NavigationGroup
+    Dim nFldr As NavigationFolder
+    Dim i As Integer, j As Integer
+    Set mCalendar = calendar.GetExplorer().NavigationPane.Modules.GetNavigationModule(olModuleCalendar)
+    For i = 1 To mCalendar.NavigationGroups.Count
+        Set nGrp = mCalendar.NavigationGroups.Item(i)
+        For j = 1 To nGrp.NavigationFolders.Count
+            Set nFldr = nGrp.NavigationFolders.Item(j)
+            If UCase(nFldr) = UCase(name) Then
+                nFldr.IsSelected = doSelect
+                nFldr.IsSideBySide = False
+            End If
+        Next
+        
+    Next
+End Sub
+
